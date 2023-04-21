@@ -1,31 +1,45 @@
-import requests
-import pprint
+import pickle
+import pprint as pp
+import csv
 
-api_key = "qxwn52dqxvaqkfuf9z2fsfbb"
-season_year = "2021"
-season_phase = "REG"
 
-# Get the list of games in the season
-games_url = f"https://api.sportradar.us/nba/trial/v8/en/games/2021/REG/schedule.json?api_key={api_key}"
-games_response = requests.get(games_url)
-games_data = games_response.json()
+def writeCSV(team, gameIds, dat, toFile, write):
+    for id in gameIds:
+        currRow = []
+        currRow.append(id)
+        teamPts = dat[id][team]['points']
+        otherPts = dat[id]['home' if team == 'away' else 'away']['points']
+        currRow.append(teamPts)
+        currRow.append('win' if teamPts > otherPts else 'loss')
+        try:
+            currRow.append(dat[id]['attendance'])
+        except:
+            currRow.append("noinfo")
+        print("tie??" if teamPts == otherPts else "")
+        for stat in statsKeys:
+            currRow.append(dat[id]['home']['statistics'][stat])
+        write.writerow(currRow)
+    toFile.close()
 
-# Loop through each game and retrieve the extended box score
-count = 0
-for game in games_data["games"]:
-    game_id = game["id"]
-    try:
+try:
+    with open('pickledDat200.pickle', 'rb') as handle:
+        dat = pickle.load(handle)
+    print("got dat")
+except:
+    print("open pickle jar error")
 
-        boxscore_url = f"https://api.sportradar.us/nba/trial/v8/en/games/{game_id}/summary.json?api_key={api_key}"
-        boxscore_response = requests.get(boxscore_url)
-        boxscore_data = boxscore_response.json()
-    except:
-        boxscore_data = "null no data this time"
-    count += 1
-    if count > 3:
-        break
-    # Do something with the boxscore_data, such as
-    pprint.pprint(boxscore_data)
-    f = open("demofile2.txt", "a")
-    f.write(pprint.pformat(boxscore_data))
-    f.close()
+
+gameIds = list(dat.keys())
+print("got ids")
+statsKeys = list(dat[gameIds[0]]['home']['statistics'])
+print(statsKeys)
+statsKeys.remove('most_unanswered')
+statsKeys.remove('periods')
+# from dat: id->home/away->points
+# id->home/away->statistics->{stats list all vars here}
+# id->attendance
+with open('tidy200', mode='w') as toFile:
+    write = csv.writer(toFile, delimiter=',', quotechar='"')
+    writeCSV('home', gameIds, dat, toFile, write)
+
+
