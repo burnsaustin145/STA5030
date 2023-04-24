@@ -6,6 +6,9 @@ api_key = "qxwn52dqxvaqkfuf9z2fsfbb"
 season_year = "2021"
 season_phase = "REG"
 
+# the number of total api calls to make
+intake = 500
+
 # Get the list of games in the season
 games_url = f"https://api.sportradar.us/nba/trial/v8/en/games/2021/REG/schedule.json?api_key={api_key}"
 games_response = requests.get(games_url)
@@ -26,7 +29,7 @@ for game in games_data["games"]:
     except:
         boxscore_data = "null no data this time"
     count += 1
-    if count > 200:
+    if count > intake:
         break
     # Do something with the boxscore_data, such as
 
@@ -34,8 +37,11 @@ for game in games_data["games"]:
     # f = open("demofile2.txt", "a")
     # f.write(pprint.pformat(boxscore_data))
     # f.close()
+
+# changing to get more data
+jar_name = "pickledDat500.pickle"
 try:
-    with open('pickledDat200.pickle', 'wb') as handle:
+    with open(jar_name, 'wb') as handle:
         pickle.dump(allDat, handle, protocol=pickle.HIGHEST_PROTOCOL)
 except:
     print("can't pickle")
