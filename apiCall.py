@@ -45,3 +45,5 @@ try:
         pickle.dump(allDat, handle, protocol=pickle.HIGHEST_PROTOCOL)
 except:
     print("can't pickle")
+
+#  just making some changes at the bottom to test some vc stuff
